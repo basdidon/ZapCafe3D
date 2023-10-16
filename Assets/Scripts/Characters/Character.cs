@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.AI;
 
 [RequireComponent(typeof(NavMeshAgent))]
-public class Customer : MonoBehaviour
+public abstract class Character : MonoBehaviour
 {
     // Debug
     [SerializeField] Transform targetToMove;
