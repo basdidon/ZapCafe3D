@@ -6,8 +6,9 @@ using UnityEngine;
 
 namespace GridPlacement
 {
-    public class ObjectToPlace : MonoBehaviour
+    public class GridObject : MonoBehaviour
     {
+        Vector3 CellSize = Vector3.one;
         List<Vector3Int> objectCells;
         public IReadOnlyList<Vector3Int> ObjectCells => objectCells;
 
@@ -48,32 +49,50 @@ namespace GridPlacement
             objectCells[index] = newValue;
             return true;
         }
+
+        readonly Vector3[] vecs = new Vector3[]
+{
+                new Vector3(.5f,0,.5f),
+                new Vector3(.5f, 0, -.5f),
+                new Vector3(-.5f, 0, -.5f),
+                new Vector3(-.5f, 0, .5f),
+};
+        /*
+        private void OnDrawGizmos()
+        {
+            foreach (var cellPos in ObjectCells)
+            {
+                Gizmos.color = cellPos == Vector3Int.zero ? Color.black : Color.white;
+                var gridCenterLocal = Vector3.Scale(CellSize, cellPos) +(CellSize / 2);
+                Gizmos.DrawCube(gridCenterLocal,Vector3.one);
+            }
+        }*/
     }
 
 
 #if UNITY_EDITOR
-    [CustomEditor(typeof(ObjectToPlace))]
-    public class ObjectToPlaceCustomEditor : Editor
+    [CustomEditor(typeof(GridObject))]
+    public class GridObjectCustomEditor : Editor
     {
         bool isExpanded = true;
         Vector3Int newCell = Vector3Int.zero;
 
         public override void OnInspectorGUI()
         {
-            if(target is ObjectToPlace objectToPlace)
+            if(target is GridObject gridObject)
             {
                 serializedObject.Update();
 
                 isExpanded = EditorGUILayout.Foldout(isExpanded, "Object Cells");
 
-                if (objectToPlace.ObjectCells == null)
+                if (gridObject.ObjectCells == null)
                 {
                     if (!isExpanded)
                         return;
 
                     if (GUILayout.Button("CreateList"))
                     {
-                        objectToPlace.InstantiateObjectCellList();
+                        gridObject.InstantiateObjectCellList();
                     }
                 }
                 else
@@ -81,13 +100,13 @@ namespace GridPlacement
                     if (!isExpanded)
                         return;
 
-                    for (int i = 0; i < objectToPlace.ObjectCells.Count; i++)
+                    for (int i = 0; i < gridObject.ObjectCells.Count; i++)
                     {
                         EditorGUI.BeginDisabledGroup(i == 0);
                         GUILayout.BeginHorizontal();
-                        objectToPlace.SetObjectCellAt(i, EditorGUILayout.Vector3IntField("", objectToPlace.ObjectCells[i]));
+                        gridObject.SetObjectCellAt(i, EditorGUILayout.Vector3IntField("", gridObject.ObjectCells[i]));
 
-                        if (GUILayout.Button("-",GUILayout.Width(20))) objectToPlace.Remove(objectToPlace.ObjectCells[i]);
+                        if (GUILayout.Button("-",GUILayout.Width(20))) gridObject.Remove(gridObject.ObjectCells[i]);
 
                         GUILayout.EndHorizontal();
                         EditorGUI.EndDisabledGroup();
@@ -99,7 +118,7 @@ namespace GridPlacement
                     newCell = EditorGUILayout.Vector3IntField("", newCell);
                     if (GUILayout.Button("AddCell"))
                     {
-                        objectToPlace.AddCell(newCell);
+                        gridObject.AddCell(newCell);
                     }
                     GUILayout.EndHorizontal();
                     DrawHorizontalLine();
@@ -108,7 +127,7 @@ namespace GridPlacement
                     GUI.color = Color.white;
                     if (GUILayout.Button("Clear"))
                     {
-                        objectToPlace.InstantiateObjectCellList();
+                        gridObject.InstantiateObjectCellList();
                     }
 
                 }
@@ -118,22 +137,16 @@ namespace GridPlacement
             }
         }
 
-        Vector3[] vecs = new Vector3[]
-        {
-                new Vector3(.5f,0,.5f),
-                new Vector3(.5f, 0, -.5f),
-                new Vector3(-.5f, 0, -.5f),
-                new Vector3(-.5f, 0, .5f),
-        };
 
+        /*
         private void OnSceneGUI()
         {
-            if (target is ObjectToPlace objectToPlace)
+            if (target is GridObject gridObject)
             {
-                if (objectToPlace.ObjectCells == null)
+                if (gridObject.ObjectCells == null)
                     return;
 
-                foreach (var cellPos in objectToPlace.ObjectCells)
+                foreach (var cellPos in gridObject.ObjectCells)
                 {
                     var translatePos = vecs.Select(rectPos => cellPos + rectPos).ToArray();
                     /*
@@ -141,14 +154,14 @@ namespace GridPlacement
                     var rect_y = translatePos.Min(pos => pos.z);
                     var rect_width = translatePos.Max(pos => pos.x);
                     var rect_height = translatePos.Max(pos => pos.y);
-                    Rect rect = new(rect_x,rect_y,rect_width,rect_height);*/
+                    Rect rect = new(rect_x,rect_y,rect_width,rect_height);
                     var faceColor = cellPos == Vector3Int.zero ? Color.green : Color.gray;
                     Handles.DrawSolidRectangleWithOutline(translatePos, faceColor, Color.black);
                 }
 
             }
         }
-
+*/
         void DrawHorizontalLine()
         {
             var rect = EditorGUILayout.BeginHorizontal();
