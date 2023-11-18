@@ -12,4 +12,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9a0797f3045355c46881f7437ffae69b, type: 3}
   m_Name: Building
   m_EditorClassIdentifier: 
-  <PlacedObjectPrefab>k__BackingField: {fileID: -8679921383154817045, guid: a81ff5110415a31419363057e47a0253, type: 3}
+  <PlacedObjectPrefab>k__BackingField: {fileID: 7806091663434604739, guid: 58af323a0ccb8ee438e9da0b08ec5932, type: 3}

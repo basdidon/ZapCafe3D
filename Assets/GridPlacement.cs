@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.Tilemaps;
@@ -25,11 +26,21 @@ namespace GridPlacement
             gridObjects.Add(cellPos,gridObject);
         }
 
-        public Texture texture;
-        public Transform target;
-        public Transform DebugTransform;
-
-        public PlacedObjectSO objectSO;
+        [SerializeField] Transform focusTile;
+        [SerializeField] Vector3 focusTileOffset;
+        Vector3Int focusCellPos;
+        public Vector3Int FocusCellPos
+        {
+            get => focusCellPos;
+            set
+            {
+                if(focusCellPos != value)
+                {
+                    focusCellPos = value;
+                    focusTile.position = Grid.GetCellCenterWorld(value) + focusTileOffset;
+                }
+            }
+        }
 
         private void OnEnable()
         {
@@ -67,31 +78,43 @@ namespace GridPlacement
 
         private void Start()
         {
-            DebugTransform = Instantiate(objectSO.PlacedObjectPrefab);
+            focusTile.gameObject.SetActive(false);
         }
 
-        private void Update()
+        private void FixedUpdate()
         {
-            var mousePos = cursorPosition.action.ReadValue<Vector2>();
-            var camRay = Camera.main.ScreenPointToRay(mousePos);
-
-            if(Physics.Raycast(camRay,out RaycastHit hit,100f))
+            if (TryGetCellByScreenPoint(out Vector3Int cellPos))
             {
-                if (!hit.transform.CompareTag("Floor"))
-                    return;
+                focusTile.gameObject.SetActive(true);
+                FocusCellPos = cellPos;
+            }
+            else
+            {
+                focusTile.gameObject.SetActive(false);
+            }
+        }
 
-                var cellPos = Grid.WorldToCell(hit.point);
-                DebugTransform.position = Grid.GetCellCenterWorld(cellPos);
+        bool TryGetCellByScreenPoint(out Vector3Int targetCell)
+        {
+            targetCell = Vector3Int.zero;
+
+            RaycastHit[] hits = new RaycastHit[100];
+            int hitsCount;
+
+            hitsCount = Physics.RaycastNonAlloc(Camera.main.ScreenPointToRay(cursorPosition.action.ReadValue<Vector2>()), hits, 100);
+
+            if (hitsCount > 0)
+            {
+                var slicedHits = hits.Take(hitsCount);
+                if (slicedHits.Any(hit => hit.transform.CompareTag("Floor")))
+                {
+                    var firstCellHit = slicedHits.First(hit => hit.transform.CompareTag("Floor"));
+                    targetCell = Grid.WorldToCell(firstCellHit.point);
+                    return true;
+                }
             }
 
+            return false;
         }
-        /*
-        void OnDrawGizmosSelected()
-        {
-            // Draw a texture rectangle on the XY plane of the scene
-            Mesh mesh = new();
-            mesh.vertices = vecs;
-            Gizmos.DrawMesh(mesh);
-        }*/
     }
 }
